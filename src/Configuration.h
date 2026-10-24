@@ -24,7 +24,10 @@ namespace Configuration {
 
 		inline int getMaxCharges(RE::Actor* a_actor)
 		{
-			return a_actor->AsActorValueOwner()->GetActorValue(RE::ActorValue::kAlchemy) * fAlchemyMod;
+			int maxCharges = a_actor->AsActorValueOwner()->GetActorValue(RE::ActorValue::kAlchemy) * fAlchemyMod;
+			if (maxCharges < 1)
+				return 1;
+			return maxCharges;
 		}
     }
 };

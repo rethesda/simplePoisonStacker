@@ -69,7 +69,7 @@ void UI::SaveSettings() {
 
 void UI::Settings::Render() {
     ImGuiMCP::Text("Max Poison Charges = Alchemy Skill * Modifier");
-	ImGuiMCP::SliderFloat("Modifier", &Configuration::Settings::fAlchemyMod, 0.0f, 1.0f, "%.2f");
+	ImGuiMCP::SliderFloat("Modifier", &Configuration::Settings::fAlchemyMod, 0.0f, 2.0f, "%.2f");
 	ImGuiMCP::Checkbox("Display Notifications", &Configuration::Settings::bDisplayNotification);
 }
 
@@ -92,24 +92,25 @@ void UI::setWidgetColor(const char* label, int& color) {
 	}
 }
 
+void drawWidgetOptions(const char* widgetName, float& xpos, float& ypos, float& rotation, float& xscale, float& yscale, bool& invertGrowth) {
+	ImGuiMCP::Text("%s:", widgetName);
+	ImGuiMCP::SliderFloat("X Position", &xpos, -20.0f, 120.0f, "%.2f");
+	ImGuiMCP::SliderFloat("Y Position", &ypos, -20.0f, 120.0f, "%.2f");
+	ImGuiMCP::SliderFloat("Rotation", &rotation, 0.0f, 360.0f, "%.2f");
+	ImGuiMCP::SliderFloat("X Scale", &xscale, 0.0f, 10.0f, "%.2f");
+	ImGuiMCP::SliderFloat("Y Scale", &yscale, 0.0f, 10.0f, "%.2f");
+	ImGuiMCP::Checkbox("Invert Bar Growth", &invertGrowth);
+	ImGuiMCP::Separator();
+}
+
 void UI::HUD::Render() {
-	ImGuiMCP::Text("HUD Settings");
-	ImGuiMCP::SliderFloat("Right Widget X Position", &Configuration::Settings::fRightWidgetXpos, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Right Widget Y Position", &Configuration::Settings::fRightWidgetYpos, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Right Widget Rotation", &Configuration::Settings::fRightWidgetRotation, 0.0f, 360.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Right Widget X Scale", &Configuration::Settings::fRightWidgetXscale, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Right Widget Y Scale", &Configuration::Settings::fRightWidgetYscale, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::Checkbox("Invert Right Widget Bar Growth", &Configuration::Settings::bRightWidgetBarGrowth);
-	ImGuiMCP::SliderFloat("Left Widget X Position", &Configuration::Settings::fLeftWidgetXpos, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Left Widget Y Position", &Configuration::Settings::fLeftWidgetYpos, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Left Widget Rotation", &Configuration::Settings::fLeftWidgetRotation, 0.0f, 360.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Left Widget X Scale", &Configuration::Settings::fLeftWidgetXscale, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::SliderFloat("Left Widget Y Scale", &Configuration::Settings::fLeftWidgetYscale, 0.0f, 100.0f, "%.2f");
-	ImGuiMCP::Checkbox("Invert Left Widget Bar Growth", &Configuration::Settings::bLeftWidgetBarGrowth);
-	
-	setWidgetColor("Widget Bar Color", Configuration::Settings::iWidgetBarColor);
-	setWidgetColor("Widget Border Color", Configuration::Settings::iWidgetBorderColor);
-	setWidgetColor("Widget Background Color", Configuration::Settings::iWidgetBGColor);
+	drawWidgetOptions("Right Widget", Configuration::Settings::fRightWidgetXpos, Configuration::Settings::fRightWidgetYpos, Configuration::Settings::fRightWidgetRotation, Configuration::Settings::fRightWidgetXscale, Configuration::Settings::fRightWidgetYscale, Configuration::Settings::bRightWidgetBarGrowth);
+	drawWidgetOptions("Left Widget", Configuration::Settings::fLeftWidgetXpos, Configuration::Settings::fLeftWidgetYpos, Configuration::Settings::fLeftWidgetRotation, Configuration::Settings::fLeftWidgetXscale, Configuration::Settings::fLeftWidgetYscale, Configuration::Settings::bLeftWidgetBarGrowth);
+
+	ImGuiMCP::Text("Colors:");
+	setWidgetColor("Bar Color", Configuration::Settings::iWidgetBarColor);
+	setWidgetColor("Border Color", Configuration::Settings::iWidgetBorderColor);
+	setWidgetColor("Background Color", Configuration::Settings::iWidgetBGColor);
 
 	if(ImGuiMCP::Button("Defaults"))
 	{

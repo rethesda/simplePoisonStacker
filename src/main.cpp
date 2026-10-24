@@ -119,20 +119,50 @@ namespace Hooks
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
+	struct ArrowReleaseHandler
+	{
+		static std::uint8_t releaseArrow(std::uint32_t* a_this, RE::Actor* a_actor)
+		{
+			bool hasPoison = false;
+			auto a_poisonedWeapon = a_actor->GetEquippedEntryData(false);
+			if (a_poisonedWeapon && currentPoison::getCurrentPoison(a_poisonedWeapon))
+				hasPoison = true;
+
+			std::uint8_t result = _releaseArrow(a_this, a_actor);
+
+			if (a_actor->IsPlayerRef() && hasPoison && Configuration::Settings::bDisplayNotification && a_poisonedWeapon) {
+				auto poison = currentPoison::getCurrentPoison(a_poisonedWeapon);
+				if (!poison) {
+					auto object = a_poisonedWeapon->object;
+					if (!object->IsWeapon())
+						return result;
+
+					RE::SendHUDMessage::ShowHUDMessage(std::string(a_poisonedWeapon->GetDisplayName()).append(" is no longer poisoned.").c_str());
+				}
+			}
+
+			return result;
+		}
+		static inline REL::Relocation<decltype(releaseArrow)> _releaseArrow;
+	};
+
 	static void Install()
 	{
 		stl::write_thunk_call<finalizePoison>(RELOCATION_ID(36976, 38001).address() + REL::Relocate(0x7A8, 0x733));
 		stl::write_thunk_call<currentPoison>(RELOCATION_ID(39406, 40481).address() + 0x89);
 		stl::write_thunk_call<poisonChargesMult>(RELOCATION_ID(39407, 40482).address() + REL::Relocate(0x106, 0xF0));
 		stl::write_thunk_call<PoisonTarget>(RELOCATION_ID(37673, 38627).address() + REL::Relocate(0x185, 0x194));
+
+		REL::Relocation<std::uintptr_t> arrowReleaseVtbl{ RE::VTABLE_ArrowReleaseHandler[0]};
+		ArrowReleaseHandler::_releaseArrow = arrowReleaseVtbl.write_vfunc(0x1, ArrowReleaseHandler::releaseArrow);
 	
 		if (REL::Module::IsAE()) {
 			constexpr std::array locationsA{
 				std::make_pair<std::uint64_t, std::size_t>(40570, 0xf2),
 				std::make_pair<std::uint64_t, std::size_t>(51149, 0x76),
 				std::make_pair<std::uint64_t, std::size_t>(51543, 0x235),
-				std::make_pair<std::uint64_t, std::size_t>(51548, 0xc2),  //8ba080
-				std::make_pair<std::uint64_t, std::size_t>(51870, 0x85),  //8ba080
+				std::make_pair<std::uint64_t, std::size_t>(51548, 0xc2),
+				std::make_pair<std::uint64_t, std::size_t>(51870, 0x85),
 			};
 			for (const auto& [id, offset] : locationsA) {
 				REL::Relocation<std::uintptr_t> target(REL::ID(id), offset);
@@ -156,7 +186,7 @@ namespace Hooks
 
 SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 {
-	SKSE::Init(a_skse, { .trampoline = true,.trampolineSize = 70 });	//70 = 5 different functions, 14 bytes each
+	SKSE::Init(a_skse, { .trampoline = true,.trampolineSize = 84 });	//84 = 6 different functions, 14 bytes each
 
 	Hooks::Install();
 
